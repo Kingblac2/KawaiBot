@@ -11,6 +11,7 @@ def call_llm(prompt: str, model: str = None) -> str:
     Calls Gemini API if GEMINI_API_KEY is configured. 
     Otherwise, falls back to local Ollama instance.
     """
+    gemini_error = None
     # 1. Gemini API Engine
     if config.GEMINI_API_KEY:
         clean_key = config.GEMINI_API_KEY.strip().strip('"\'')
@@ -85,13 +86,9 @@ def call_llm(prompt: str, model: str = None) -> str:
                     last_error_msg = str(e)
                     logger.warning(f"Endpoint {api_version}/{current_model} connection error: {e}")
             
-            # If we attempted Gemini and all options failed:
-            return json.dumps({
-                "intent": "unknown",
-                "risk_level": "medium",
-                "response": f"Gemini API Negotiation failed. Last error: {last_error_msg}",
-                "reasoning_steps": ["All fallback Gemini model and version configurations failed."]
-            })
+            # If all Gemini options failed:
+            gemini_error = last_error_msg
+            logger.warning(f"Gemini API Negotiation failed: {gemini_error}. Falling back to local Ollama...")
 
     # 2. Local Ollama Fallback Engine
     if model is None or "gemini" in model:
@@ -115,9 +112,14 @@ def call_llm(prompt: str, model: str = None) -> str:
         return result.get("response", "").strip()
     except Exception as e:
         logger.error(f"Error calling Ollama fallback: {e}")
+        error_response = "I encountered an issue communicating with the AI service."
+        if gemini_error:
+            error_response += f" Gemini API failed with: {gemini_error}."
+        error_response += f" Local Ollama connection failed with: {str(e)}."
+        
         return json.dumps({
             "intent": "unknown",
             "risk_level": "medium",
-            "response": "I encountered an issue communicating with the AI service. If you are using Gemini, check your GEMINI_API_KEY setting. Otherwise, verify local Ollama status.",
+            "response": error_response,
             "reasoning_steps": ["Error connecting to all configured LLM providers."]
         })
