@@ -25,7 +25,7 @@ def call_llm(prompt: str, model: str = None) -> str:
         }
         try:
             logger.info(f"Calling Gemini API model {gemini_model}...")
-            response = requests.post(url, headers=headers, json=payload, timeout=20)
+            response = requests.post(url, headers=headers, json=payload, timeout=60)
             response.raise_for_status()
             result = response.json()
             
@@ -59,7 +59,7 @@ def call_llm(prompt: str, model: str = None) -> str:
     
     try:
         logger.info(f"Calling local Ollama at {url} with model {model}...")
-        response = requests.post(url, json=payload, timeout=30)
+        response = requests.post(url, json=payload, timeout=120)
         response.raise_for_status()
         result = response.json()
         return result.get("response", "").strip()
