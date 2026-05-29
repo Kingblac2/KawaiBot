@@ -15,6 +15,11 @@ DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gemma4:latest")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 
+# OpenAI API settings
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+
 
 # Safety Guardrails Lists
 BLOCKED_KEYWORDS = [
