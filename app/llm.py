@@ -20,30 +20,55 @@ def call_llm(prompt: str, model: str = None) -> str:
     if config.OPENAI_API_KEY:
         clean_key = config.OPENAI_API_KEY.strip().strip('"\'')
         if clean_key:
-            user_model = model if model and ("gpt" in model or "o1" in model) else config.OPENAI_MODEL
-            openai_models = [
-                user_model,
-                "gpt-4o-mini",
-                "gpt-4o",
-                "gpt-3.5-turbo"
-            ]
+            base_url = config.OPENAI_API_BASE.strip().rstrip("/")
+            user_model = model if model else config.OPENAI_MODEL
+            
+            # Select fallback models based on provider base URL
+            if "groq" in base_url.lower():
+                openai_models = [
+                    user_model,
+                    "llama-3.3-70b-versatile",
+                    "mixtral-8x7b-32768",
+                    "gemma2-9b-it"
+                ]
+            elif "openrouter" in base_url.lower():
+                openai_models = [
+                    user_model,
+                    "google/gemini-2.0-flash-exp:free",
+                    "meta-llama/llama-3-8b-instruct:free",
+                    "mistralai/mistral-7b-instruct:free"
+                ]
+            else:
+                openai_models = [
+                    user_model,
+                    "gpt-4o-mini",
+                    "gpt-4o",
+                    "gpt-3.5-turbo"
+                ]
+            
             seen = set()
             openai_models = [x for x in openai_models if not (x in seen or seen.add(x))]
             
             last_openai_error = ""
             for current_model in openai_models:
-                url = "https://api.openai.com/v1/chat/completions"
+                url = f"{base_url}/chat/completions"
                 headers = {
                     "Content-Type": "application/json",
                     "Authorization": f"Bearer {clean_key}"
                 }
+                
+                # OpenRouter integration headers
+                if "openrouter" in base_url.lower():
+                    headers["HTTP-Referer"] = "https://github.com/Kingblac2/KawaiBot"
+                    headers["X-Title"] = "ViperAI Secure Chatbot"
+                
                 payload = {
                     "model": current_model,
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.0
                 }
                 try:
-                    logger.info(f"Attempting OpenAI model {current_model}...")
+                    logger.info(f"Attempting API base model {current_model}...")
                     
                     max_retries = 3
                     for attempt in range(max_retries):
@@ -51,7 +76,7 @@ def call_llm(prompt: str, model: str = None) -> str:
                         if response.status_code == 200:
                             break
                         if response.status_code == 429 and attempt < max_retries - 1:
-                            logger.warning(f"OpenAI Rate limited (429) on {current_model}. Retrying in 4s...")
+                            logger.warning(f"Rate limited (429) on {current_model}. Retrying in 4s...")
                             time.sleep(4.0)
                             continue
                         break
@@ -63,10 +88,10 @@ def call_llm(prompt: str, model: str = None) -> str:
                             return choices[0].get("message", {}).get("content", "").strip()
                     
                     last_openai_error = f"HTTP {response.status_code}: {response.text}"
-                    logger.warning(f"OpenAI model {current_model} returned error: {last_openai_error}")
+                    logger.warning(f"Model {current_model} returned error: {last_openai_error}")
                 except Exception as e:
                     last_openai_error = str(e)
-                    logger.warning(f"OpenAI model {current_model} connection error: {e}")
+                    logger.warning(f"Model {current_model} connection error: {e}")
             
             openai_error = last_openai_error
             logger.warning(f"OpenAI Engine failed: {openai_error}. Moving to next provider...")
