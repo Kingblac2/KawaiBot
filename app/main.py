@@ -1,11 +1,9 @@
 import logging
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+import os
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 from pathlib import Path
 
-from app.models import ChatRequest, ChatResponse
 from app import orchestrator, database
 
 # Setup Logging
@@ -15,54 +13,53 @@ logging.basicConfig(
 )
 logger = logging.getLogger("app.main")
 
-app = FastAPI(
-    title="ViperAI Secure Chatbot Backend",
-    description="Secure AI Chatbot showcasing CoT, Prompt Chaining, ReAct framework, and Safety Guardrails.",
-    version="1.0.0"
+# Define frontend static directory relative to this file
+frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
+
+app = Flask(
+    __name__,
+    static_folder=str(frontend_dir),
+    static_url_path="/static"
 )
 
-# CORS configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Enable CORS
+CORS(app)
 
 # Initialize Database JSON
 database.init_db()
 
-@app.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
+@app.route("/")
+def serve_index():
+    if frontend_dir.exists():
+        return send_from_directory(app.static_folder, "index.html")
+    else:
+        return "ViperAI Frontend static folder not found.", 404
+
+@app.route("/api/chat", methods=["POST"])
+def chat_endpoint():
     try:
-        response_data = orchestrator.run_chat_pipeline(request.message)
-        return response_data
+        data = request.get_json() or {}
+        message = data.get("message")
+        
+        if not message:
+            return jsonify({"error": "Message is required."}), 400
+            
+        response_data = orchestrator.run_chat_pipeline(message)
+        return jsonify(response_data)
     except Exception as e:
         logger.error(f"Error in chat endpoint: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error executing chat pipeline.")
+        return jsonify({"error": "Internal server error executing chat pipeline."}), 500
 
-@app.get("/api/history")
-async def history_endpoint():
+@app.route("/api/history", methods=["GET"])
+def history_endpoint():
     try:
         history = database.get_history()
-        return history
+        return jsonify(history)
     except Exception as e:
         logger.error(f"Error fetching history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Could not read chat history database.")
+        return jsonify({"error": "Could not read chat history database."}), 500
 
-# Serve Frontend static assets
-frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
-
-if frontend_dir.exists():
-    # Mount everything in frontend folder under /frontend or just mount static
-    # To avoid conflict with api endpoints, we will serve index.html directly on root
-    @app.get("/")
-    async def serve_index():
-        return FileResponse(frontend_dir / "index.html")
-
-    # Mount remaining assets (css, js) if we want, or just mount the whole directory
-    # under the root except the specific /api routes
-    app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
-else:
-    logger.warning("Frontend directory not found. Running in API-only mode.")
+# Standalone execution
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="127.0.0.1", port=port, debug=True)

@@ -7,6 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gemma4:latest")
 
+# Gemini API settings
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+
+
 # Safety Guardrails Lists
 BLOCKED_KEYWORDS = [
     "hack wifi", "wifi hack", "bypass admin", "ignore instructions", 

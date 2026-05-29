@@ -4,16 +4,29 @@ import datetime
 from pathlib import Path
 from typing import List, Dict
 
-CONVO_FILE = Path(__file__).resolve().parent.parent / "conversations.json"
+# If running on Vercel, store the json database in /tmp to avoid write-permission errors.
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+
+if IS_VERCEL:
+    CONVO_FILE = Path("/tmp/conversations.json")
+else:
+    CONVO_FILE = Path(__file__).resolve().parent.parent / "conversations.json"
+
+# In-memory fallback if file system is completely locked or unavailable
+_in_memory_db = []
 
 def init_db():
-    if not CONVO_FILE.exists():
-        with open(CONVO_FILE, "w") as f:
-            json.dump([], f)
+    try:
+        if not CONVO_FILE.exists():
+            with open(CONVO_FILE, "w") as f:
+                json.dump([], f)
+    except Exception as e:
+        # Fallback to in-memory initialization
+        pass
 
 def save_chat(message: str, response_json: Dict) -> Dict:
     """
-    Saves a chat message and response to the local JSON file database.
+    Saves a chat message and response to the database (file or memory).
     """
     init_db()
     
@@ -30,23 +43,34 @@ def save_chat(message: str, response_json: Dict) -> Dict:
         "full_data": response_json
     }
     
+    # 1. Attempt writing to file
     try:
-        with open(CONVO_FILE, "r") as f:
-            data = json.load(f)
-    except Exception:
         data = []
+        if CONVO_FILE.exists():
+            with open(CONVO_FILE, "r") as f:
+                data = json.load(f)
         
-    data.append(chat_entry)
-    
-    with open(CONVO_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+        data.append(chat_entry)
         
-    return chat_entry
+        with open(CONVO_FILE, "w") as f:
+            json.dump(data, f, indent=2)
+            
+        return chat_entry
+    except Exception as e:
+        # 2. Fallback to in-memory store
+        global _in_memory_db
+        _in_memory_db.append(chat_entry)
+        return chat_entry
 
 def get_history() -> List[Dict]:
     init_db()
+    # 1. Try file storage
     try:
-        with open(CONVO_FILE, "r") as f:
-            return json.load(f)
+        if CONVO_FILE.exists():
+            with open(CONVO_FILE, "r") as f:
+                return json.load(f)
     except Exception:
-        return []
+        pass
+        
+    # 2. Fallback to in-memory store
+    return _in_memory_db
