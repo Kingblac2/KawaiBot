@@ -1,6 +1,7 @@
 import requests
 import json
 import logging
+import time
 from app import config
 
 logger = logging.getLogger("app.llm")
@@ -44,8 +45,29 @@ def call_llm(prompt: str, model: str = None) -> str:
                 }
                 try:
                     logger.info(f"Attempting Gemini endpoint: {api_version}/models/{current_model}...")
-                    response = requests.post(url, headers=headers, json=payload, timeout=40)
                     
+                    max_retries = 3
+                    for attempt in range(max_retries):
+                        response = requests.post(url, headers=headers, json=payload, timeout=40)
+                        
+                        if response.status_code == 200:
+                            break
+                        
+                        if response.status_code == 429:
+                            retry_delay = 4.0
+                            try:
+                                error_json = response.json()
+                                logger.warning(f"Gemini API rate limited (429). Details: {error_json}")
+                            except:
+                                pass
+                            
+                            if attempt < max_retries - 1:
+                                logger.warning(f"Retrying in {retry_delay}s... (Attempt {attempt + 1}/{max_retries})")
+                                time.sleep(retry_delay)
+                                continue
+                        
+                        break
+
                     if response.status_code == 200:
                         result = response.json()
                         candidates = result.get("candidates", [])
