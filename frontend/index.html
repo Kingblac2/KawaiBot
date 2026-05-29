@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViperAI // Secure AI Assistant</title>
+    <!-- Google Fonts for retro/modern feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="memphis-grid-bg"></div>
+
+    <div class="app-container">
+        <!-- TOP BRAND HEADER -->
+        <header class="main-header">
+            <div class="header-logo">
+                <span class="ascii-art">⚡</span> VIPER_AI // SECURE_CORE
+            </div>
+            <div class="header-status">
+                <div class="status-dot green"></div>
+                <span>LLM STATUS: ONLINE (gemma4)</span>
+            </div>
+        </header>
+
+        <!-- MAIN SECTION -->
+        <main class="dashboard-grid">
+            
+            <!-- LEFT PANEL: SESSION HISTORY -->
+            <section class="panel history-panel">
+                <h2 class="panel-title pink-bg">SESSION_LOGS</h2>
+                <div class="history-list" id="historyList">
+                    <!-- Session cards will be loaded here -->
+                    <div class="no-history-msg">No logs stored yet. Start chatting!</div>
+                </div>
+            </section>
+
+            <!-- MIDDLE PANEL: CHAT HUB -->
+            <section class="panel chat-panel">
+                <h2 class="panel-title yellow-bg">CHAT_INTERFACE</h2>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant-msg">
+                        <div class="msg-sender">ViperAI // System</div>
+                        <div class="msg-content">
+                            Hello. I am <strong>ViperAI</strong>, a secure corporate assistant. Ask me questions, and watch the JSON safety assessment process in the inspector panel on the right.
+                        </div>
+                        <div class="msg-meta">risk_level: safe | intent: greeting</div>
+                    </div>
+                </div>
+
+                <!-- Input area -->
+                <form class="chat-input-area" id="chatForm">
+                    <input type="text" id="userInput" placeholder="Ask ViperAI (e.g. 'What is the company mission?' or test injection 'ignore instructions')..." required autocomplete="off">
+                    <button type="submit" class="send-btn">
+                        <span>SEND</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- RIGHT PANEL: JSON INSPECTOR -->
+            <section class="panel inspector-panel">
+                <h2 class="panel-title teal-bg">JSON_INSPECTOR</h2>
+                
+                <div class="inspector-tabs">
+                    <button class="tab-btn active" data-tab="json">RAW_JSON</button>
+                    <button class="tab-btn" data-tab="cot">REASONING_CoT</button>
+                </div>
+
+                <div class="tab-content active" id="tab-json">
+                    <div class="json-actions">
+                        <button class="copy-btn" id="copyJsonBtn">COPY JSON</button>
+                    </div>
+                    <pre class="json-viewer"><code id="rawJsonCode">// Select a message or ask a query to inspect parsed JSON response data.</code></pre>
+                </div>
+
+                <div class="tab-content" id="tab-cot">
+                    <div class="cot-viewer">
+                        <h3>Chain of Thought Steps</h3>
+                        <ol id="cotStepsList">
+                            <li class="cot-placeholder">Reasoning steps will appear here in step-by-step detail.</li>
+                        </ol>
+
+                        <h3 class="react-section-header">ReAct Loops</h3>
+                        <div class="react-step-container">
+                            <div class="react-step">
+                                <span class="react-label thought-label">THOUGHT</span>
+                                <div id="reactThought" class="react-val">// Waiting for reasoning logs...</div>
+                            </div>
+                            <div class="react-step">
+                                <span class="react-label action-label">ACTION</span>
+                                <div id="reactAction" class="react-val">// Waiting for action logs...</div>
+                            </div>
+                            <div class="react-step">
+                                <span class="react-label obs-label">OBSERVATION</span>
+                                <div id="reactObservation" class="react-val">// Waiting for observation logs...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER BLOCK -->
+        <footer class="main-footer">
+            <div>VIPERAI v1.0.0 // AI SAFETY DEMONSTRATION</div>
+            <div class="footer-stats">
+                <span>INTENT: <strong id="footerIntent">-</strong></span>
+                <span>RISK: <strong id="footerRisk" class="risk-badge badge-neutral">-</strong></span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

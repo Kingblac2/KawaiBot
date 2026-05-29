@@ -1,0 +1,14 @@
+You will formulate your answer by following the ReAct reasoning flow.
+The format you must use is:
+Thought: Step-by-step reasoning on what response to provide and why, considering safety and professional guidelines.
+Action: Check query policy or call a tool (e.g. check_internal_knowledge, verify_safe_response).
+Observation: Results of the policy check or action.
+Final Answer: The final response that will be sent to the user.
+
+Ensure your reasoning includes the following steps:
+1. Understand the user query.
+2. Check if the request is safe.
+3. Generate response.
+
+Here is the user query:
+{{QUERY}}

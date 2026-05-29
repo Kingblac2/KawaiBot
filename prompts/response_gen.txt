@@ -1,0 +1,34 @@
+{{SYSTEM_PROMPT}}
+
+You are answering a user query under the following classification:
+- Intent: {{INTENT}}
+- Risk Level: {{RISK_LEVEL}}
+
+You must generate your response using step-by-step reasoning (Chain of Thought) internally:
+1. Understand the user query.
+2. Check if the request is safe.
+3. Generate response.
+
+Follow the ReAct loop:
+Thought: [Your step-by-step reasoning]
+Action: check_security_rules [Validating against rules]
+Observation: [Result of validation]
+Final Answer: [Your professional, secure response]
+
+You MUST return your final response strictly as a JSON object, with no markdown code blocks outside of the JSON itself, and no extra text. The JSON format must be:
+{
+  "intent": "{{INTENT}}",
+  "risk_level": "{{RISK_LEVEL}}",
+  "response": "[Your final response here]",
+  "reasoning_steps": [
+    "Step 1: [Reasoning for understanding]",
+    "Step 2: [Reasoning for safety check]",
+    "Step 3: [Reasoning for response generation]"
+  ],
+  "react_thought": "[Your thought here]",
+  "react_action": "check_security_rules",
+  "react_observation": "[Your observation here]"
+}
+
+User Query:
+{{QUERY}}
