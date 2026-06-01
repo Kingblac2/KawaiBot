@@ -9,7 +9,7 @@ logger = logging.getLogger("app.llm")
 def call_llm(prompt: str, model: str = None) -> str:
     """
     Calls the Google Gemini 3.1 API to generate a response.
-    Uses the model configured in config.GEMINI_MODEL (defaults to gemini-3.1-flash).
+    Uses the model configured in config.GEMINI_MODEL (defaults to gemini-3.1-flash-lite).
     Includes automatic rate limit (429) retries.
     """
     if not config.GEMINI_API_KEY:
