@@ -7,20 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env file
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
-# Ollama settings
-OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
-DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gemma4:latest")
-
-# Gemini API settings
+# Gemini API settings (Gemini 3.1 only)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
-
-# OpenAI API settings
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-OPENAI_API_BASE = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
-
-
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash")
 
 
 # Safety Guardrails Lists
