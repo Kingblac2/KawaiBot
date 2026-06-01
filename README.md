@@ -2,7 +2,7 @@
 
 ViperAI is a secure, AI-powered chatbot designed to answer user queries safely while adhering to strict company policies and resisting prompt injections. 
 
-Built using a **Flask** backend with **Gemini 3.1** (`gemini-3.1-flash`) model inference, it demonstrates advanced AI engineering workflows like Chain of Thought (CoT), the ReAct framework, Prompt Chaining, and Structured Output parsing.
+Built using a **Flask** backend with **Gemini 3.1** (`gemini-3.1-pro`) model inference, it demonstrates advanced AI engineering workflows like Chain of Thought (CoT), the ReAct framework, Prompt Chaining, and Structured Output parsing.
 
 ---
 
